@@ -1,0 +1,191 @@
+/*  Name-SAUBHIK PAL
+    Roll No-002220603014
+problem-2
+solve the boundary value problem -u"=x^2;0<x<1 with boundary condition u(0)=0,u(1)=0
+*/   	
+
+#include<stdio.h>
+#include<math.h>
+#define f(x) x*x
+#define n 10 //no.of parameters
+#define M 100 //no. of point division
+
+float c[100],A[100][100],x[100],y[100];
+float v(float x,int i)
+{
+     return(pow(x,i)-pow(x,i+1));
+}
+float dv(float x,int i)
+{
+    float res;
+       res=i*pow(x,i-1)-(i+1)*pow(x,i);
+    return (res);
+}
+float simpson(float a,float b,int i,int j)
+{
+    int k,p;
+    float h,ans,y[M+1];
+    ans=0.0;
+    h=(b-a)/M;
+    for(p=0;p<=M;p++)
+    {
+       x[p]=a+p*h;
+       y[p]=dv(x[p],i)*dv(x[p],j);
+    }
+    for(k=0;k<=M;k++)
+    {
+       if(k==0||k==M)
+          ans+=(h/3)*y[k];
+       else if(k%2!=0)
+          ans+=(4*h/3)*y[k];
+       else
+          ans+=(2*h/3)*y[k];
+    }
+    return (ans);
+}
+float simpson1(float a,float b,int i)
+{
+   int k,p;
+   float h,ans,y[M+1];
+   ans=0.0;
+   h=(b-a)/M;
+   for(p=0;p<=M;p++)
+   {
+      x[p]=a+p*h;
+      y[p]=v(x[p],i)*f(x[p]);
+   }
+   for(k=0;k<=M;k++)
+   {
+      if(k==0||k==M)
+         ans+=(h/3)*y[k];
+      else if(k%2!=0)
+         ans+=(4*h/3)*y[k];
+      else
+         ans+=(2*h/3)*y[k];
+   }
+   return (ans);
+}
+void gauss_elimination(float a[100][100])
+{
+    int i,j,k,pos,p;
+    float max,sum,ab,multiplier,t;
+    sum=0.0;
+    for(k=1;k<=n-1;k++)
+    {
+       max=fabs(a[k][k]);
+       pos=k;
+       for(i=k+1;i<=n;i++)
+       {
+         ab=fabs(a[i][k]);
+         if((max-ab)<0.0)
+         {
+            max=ab;
+            pos=i;
+         }
+       }
+       if((pos-k)>0)
+       {
+          for(j=k;j<=n+1;j++)
+          {
+             t=a[pos][j];
+             a[pos][j]=a[k][j];
+             a[k][j]=t;
+          }
+       }
+       for(i=k+1;i<=n;i++)
+       {
+          multiplier=a[i][k]/a[k][k];
+          for(j=k+1;j<=n+1;j++)
+          {
+             a[i][j]=a[i][j]-multiplier*a[k][j];
+          }
+       }
+       for(i=k+1;i<=n;i++)
+       {
+         a[i][k]=0.0;
+       }
+    }
+    c[n]=a[n][n+1]/a[n][n];
+    for(p=1;p<=n-1;p++)
+    {
+       sum=0.0;
+       i=n-p;
+       for(j=i+1;j<=n;j++)
+       {
+          sum=sum+a[i][j]*c[j];
+       }
+       c[i]=(a[i][n+1]-sum)/a[i][i];
+    }
+}
+int main()
+{
+   int i,j,M1;
+   float a,b,h,x[100],sol,exact;
+   M1=10;
+   printf("\nEnter the lower limit:");
+   scanf("%f",&a);
+   printf("\nEnter the upper limit:");
+   scanf("%f",&b);
+   for(i=1;i<=n;i++)
+   {
+     for(j=1;j<=n+1;j++)
+     {
+       if(j==n+1)
+          A[i][j]=simpson1(a,b,i);
+       else
+          A[i][j]=simpson(a,b,i,j);
+     }
+   }
+   gauss_elimination(A);
+   for(i=1;i<=n;i++)
+   {
+       printf("\nc%d=%f",i,c[i]);
+   }
+   printf("\n\nThe solution is:\n\n");
+   printf("    x     solution   exact\n");
+   h=(b-a)/M1;
+   for(i=0;i<=M1;i++)
+   {
+       sol=0.0;
+       x[i]=a+i*h;
+       exact=x[i]*(1-(x[i]*x[i]*x[i]))/12;
+       for(j=1;j<=n;j++)
+       {
+           sol+=c[j]*v(x[i],j);
+       }
+       printf("%f  %f  %f\n",x[i],sol,exact);
+   }
+   return 0;
+}
+/*
+Enter the lower limit:0
+
+Enter the upper limit:1
+
+c1=0.083313
+c2=0.083728
+c3=0.081008
+c4=0.006712
+c5=-0.017374
+c6=0.048282
+c7=-0.086461
+c8=0.075222
+c9=-0.023049
+c10=-0.001435
+
+The solution is:
+
+    x     solution   exact
+0.000000  0.000000  0.000000
+0.100000  0.008325  0.008325
+0.200000  0.016534  0.016533
+0.300000  0.024325  0.024325
+0.400000  0.031200  0.031200
+0.500000  0.036459  0.036458
+0.600000  0.039200  0.039200
+0.700000  0.038325  0.038325
+0.800000  0.032533  0.032533
+0.900000  0.020326  0.020325
+1.000000  0.000000  0.000000
+
+*/
