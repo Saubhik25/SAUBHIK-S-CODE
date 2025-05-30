@@ -1,0 +1,189 @@
+/*Name-SAUBHIK PAL
+  Roll NO-002220603014
+Use Ritz Method to find the approximate solution of -d^2u/dx^2-u+x^2=0 with boundary cond^n u(0)=0,u'(1)=1
+*/
+
+#include<stdio.h>
+#include<math.h>
+#define f(x) x*x
+#define n 10 //no.of parameters
+#define M 100 //no. of point division
+
+float c[100],A[100][100],x[100],y[100];
+float v(float x,int i)
+{
+     return(pow(x,i));
+}
+float dv(float x,int i)
+{
+    float res;
+       res=i*pow(x,i-1);
+    return (res);
+}
+float simpson(float a,float b,int i,int j)
+{
+    int k,p;
+    float h,ans,y[M+1];
+    ans=0.0;
+    h=(b-a)/M;
+    for(p=0;p<=M;p++)
+    {
+       x[p]=a+p*h;
+       y[p]=dv(x[p],i)*dv(x[p],j)-(v(x[p],i)*v(x[p],j));
+    }
+    for(k=0;k<=M;k++)
+    {
+       if(k==0||k==M)
+          ans+=(h/3)*y[k];
+       else if(k%2!=0)
+          ans+=(4*h/3)*y[k];
+       else
+          ans+=(2*h/3)*y[k];
+    }
+    return (ans);
+}
+float simpson1(float a,float b,int i)
+{
+   int k,p;
+   float h,ans,y[M+1];
+   ans=0.0;
+   h=(b-a)/M;
+   for(p=0;p<=M;p++)
+   {
+      x[p]=a+p*h;
+      y[p]=1.0-v(x[p],i)*f(x[p]);
+   }
+   for(k=0;k<=M;k++)
+   {
+      if(k==0||k==M)
+         ans+=(h/3)*y[k];
+      else if(k%2!=0)
+         ans+=(4*h/3)*y[k];
+      else
+         ans+=(2*h/3)*y[k];
+   }
+   return (ans);
+}
+void gauss_elimination(float a[100][100])
+{
+    int i,j,k,pos,p;
+    float max,sum,ab,multiplier,t;
+    sum=0.0;
+    for(k=1;k<=n-1;k++)
+    {
+       max=fabs(a[k][k]);
+       pos=k;
+       for(i=k+1;i<=n;i++)
+       {
+         ab=fabs(a[i][k]);
+         if((max-ab)<0.0)
+         {
+            max=ab;
+            pos=i;
+         }
+       }
+       if((pos-k)>0)
+       {
+          for(j=k;j<=n+1;j++)
+          {
+             t=a[pos][j];
+             a[pos][j]=a[k][j];
+             a[k][j]=t;
+          }
+       }
+       for(i=k+1;i<=n;i++)
+       {
+          multiplier=a[i][k]/a[k][k];
+          for(j=k+1;j<=n+1;j++)
+          {
+             a[i][j]=a[i][j]-multiplier*a[k][j];
+          }
+       }
+       for(i=k+1;i<=n;i++)
+       {
+         a[i][k]=0.0;
+       }
+    }
+    c[n]=a[n][n+1]/a[n][n];
+    for(p=1;p<=n-1;p++)
+    {
+       sum=0.0;
+       i=n-p;
+       for(j=i+1;j<=n;j++)
+       {
+          sum=sum+a[i][j]*c[j];
+       }
+       c[i]=(a[i][n+1]-sum)/a[i][i];
+    }
+}
+int main()
+{
+   int i,j,M1;
+   float a,b,h,x[100],sol,exact;
+   M1=10;
+   printf("\nEnter the lower limit:");
+   scanf("%f",&a);
+   printf("\nEnter the upper limit:");
+   scanf("%f",&b);
+   for(i=1;i<=n;i++)
+   {
+     for(j=1;j<=n+1;j++)
+     {
+       if(j==n+1)
+          A[i][j]=simpson1(a,b,i);
+       else
+          A[i][j]=simpson(a,b,i,j);
+     }
+   }
+   gauss_elimination(A);
+   for(i=1;i<=n;i++)
+   {
+       printf("\nc%d=%f",i,c[i]);
+   }
+   printf("\n\nThe solution is:\n\n");
+   printf("    x     solution   exact\n");
+   h=(b-a)/M1;
+   for(i=0;i<=M1;i++)
+   {
+       sol=0.0;
+       x[i]=a+i*h;
+       exact=((2*cos(1-x[i])-sin(x[i]))/cos(1))+pow(x[i],2)-2;
+       for(j=1;j<=n;j++)
+       {
+           sol+=c[j]*v(x[i],j);
+       }
+       printf("%f  %f  %f\n",x[i],sol,exact);
+   }
+   return 0;
+}
+/*
+//output//
+Enter the lower limit:0 1
+
+Enter the upper limit:
+c1=1.263966
+c2=-0.004363
+c3=-0.154020
+c4=-0.158909
+c5=0.453073
+c6=-0.302229
+c7=-0.046853
+c8=0.061866
+c9=0.094209
+c10=-0.062515
+
+The solution is:
+
+    x     solution   exact
+0.000000  0.000000  0.000000
+0.100000  0.126187  0.126198
+0.200000  0.251257  0.251251
+0.300000  0.374227  0.374210
+0.400000  0.494346  0.494347
+0.500000  0.611143  0.611159
+0.600000  0.724375  0.724379
+0.700000  0.833990  0.833975
+0.800000  0.940154  0.940151
+0.900000  1.043335  1.043345
+1.000000  1.144224  1.144224
+*/
