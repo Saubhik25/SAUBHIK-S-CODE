@@ -1,0 +1,191 @@
+/* 		Name- SAUBHIK PAL
+	      Roll No.- 002220603014
+	       Least Square method
+*/
+#include<stdio.h>
+#include<math.h>
+#define f(x) pow(x,2)
+#define M 10
+float c[100],L[100][100],A[100][100],x[100];
+int n;
+float lv(float x,int i);
+float simpson(float l,float u ,int i,int j);
+float simpson1(float l,float u,int i);
+void gauss_elimination(float a[100][100],int n);
+float func(float x,int i)
+{
+   float v;
+   v=pow(x,i)-pow(x,i+1);
+   return(v);
+}
+float lv(float x,int i)
+{ 
+    float res;
+    if(i==1)
+      res=(i+1)*i*pow(x,i-1);
+    else
+     res=(i+1)*i*pow(x,i-1)-i*(i-1)*pow(x,i-2);
+     return res;
+}
+float simpson(float l,float u,int i,int j)
+{
+  int k, p;
+  float h,ans,y[M+1];
+  ans=0.0;
+  h=(u-l)/M;
+  for(p=0;p<=M;p++)
+{
+    x[p]=l+p*h;
+    y[p]=lv(x[p],i)*lv(x[p],j);
+}
+  for(k=0;k<=M;k++)
+  {
+     if(k==0||k==M)
+     ans+=(h/3.0)*y[k];
+     else if(k%2!=0)
+         ans+=(4*h/3.0)*y[k];
+     else
+         ans+=(2*h/3.0)*y[k];
+   }
+   return ans;
+}
+float simpson1(float l,float u,int i)
+{
+   int k,p;
+   float h,ans,y[M+1];
+   ans=0.0;
+   h=(u-l)/M;
+   for(p=0;p<=M;p++)
+{
+      x[p]=l+p*h;
+      y[p]=lv(x[p],i)*f(x[p]);
+}
+   for(k=0;k<=M;k++)
+   {
+      if(k==0||k==M)
+     ans+=(h/3.0)*y[k];
+     else if(k%2!=0)
+         ans+=(4*h/3.0)*y[k];
+     else
+         ans+=(2*h/3.0)*y[k];
+   }
+   return ans;
+}
+void gauss_elimination(float a[100][100],int n)
+{   
+    int i,j,k,pos,p;
+    float max,sum,ab,multiplier,t;
+    sum=0.0;
+    for(k=1;k<=n-1;k++)
+    {
+       max=fabs(a[k][k]);
+       pos=k;
+       for(i=k+1;i<=n;i++)
+       {
+           ab=fabs(a[i][k]);
+           if((max-ab)<0.0)
+           {
+              max=ab;
+              pos=i;
+            }
+        }
+        if((pos-k)>0)
+        {
+           for(j=k;j<=n+1;j++)
+           {
+              t=a[pos][j];
+              a[pos][j]=a[k][j];
+              a[k][j]=t;
+           }
+        }
+        for(i=k+1;i<=n;i++)
+        {
+           multiplier=a[i][k]/a[k][k];
+           for(j=k+1;j<=n+1;j++)
+           {
+             a[i][j]=a[i][j]-multiplier*a[k][j];
+           }
+         }
+         for(i=k+1;i<=n;i++)
+         {
+           a[i][k]=0.0;
+         }
+    }
+    c[n]=a[n][n+1]/a[n][n];
+    for(p=1;p<=n-1;p++)
+    {
+        sum=0.0;
+        i=n-p;
+        for(j=i+1;j<=n;j++)
+        {
+           sum=sum+a[i][j]*c[j];
+        }
+        c[i]=(a[i][n+1]-sum)/a[i][i];
+     }
+  }
+  void main()
+  {
+    int i,j;
+    float a,b,h,x[100],sum,exact;
+    printf("\nEnter the lower limit:");
+    scanf("%f",&a);
+    printf("\nEnter the upper limit:");
+    scanf("%f",&b);
+    printf("\nEnter the number of points:");
+    scanf("%d",&n);
+    for(i=1;i<=n;i++)
+    {
+       for(j=1;j<=n+1;j++)
+       {
+         if(j==n+1)
+           A[i][j]=simpson1(a,b,i);
+         else
+           A[i][j]=simpson(a,b,i,j);
+       }
+     }
+     gauss_elimination(A,n);
+     for(i=1;i<=n;i++)
+         printf("c%d=%f\n",i,c[i]);
+         printf("\nThe solution is:\n");
+         printf("x       Num Sol.        exact sol.\n");
+	 h=(b-a)/M;
+     for(i=0;i<=M;i++)
+     {
+	x[i]=a+i*h;
+	exact=x[i]*(1-x[i]*x[i]*x[i])/12.0;
+	sum=0.0;
+	for(j=1;j<=n;j++)
+	{
+            sum+=c[j]*func(x[i],j);
+	}
+        printf("%f     %f      %f\n",x[i],sum,exact);
+      }
+    }
+
+/*
+
+output-
+Enter the lower limit:0
+
+Enter the upper limit:1
+
+Enter the number of points:2
+c1=0.083333
+c2=0.166667
+
+The solution is:
+x       Num Sol.        exact sol.
+0.000000     0.000000      0.000000
+0.100000     0.009000      0.008325
+0.200000     0.018667      0.016533
+0.300000     0.028000      0.024325
+0.400000     0.036000      0.031200
+0.500000     0.041667      0.036458
+0.600000     0.044000      0.039200
+0.700000     0.042000      0.038325
+0.800000     0.034667      0.032533
+0.900000     0.021000      0.020325
+1.000000     0.000000      0.000000
+
+  */      
+        
